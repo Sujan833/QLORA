@@ -100,17 +100,21 @@ class TransformersPEFTBackend(BaseTrainingBackend):
         train_ds = dataset_splits["train"]
         eval_ds = dataset_splits.get("validation", None)
 
-        trainer = SFTTrainer(
-            model=model,
-            tokenizer=tokenizer,
-            train_dataset=train_ds,
-            eval_dataset=eval_ds,
-            dataset_text_field="text",
-            max_seq_length=max_seq_len,
-            args=args,
-            dataset_num_proc=1,
-            packing=False,
-        )
+        trainer_kwargs = {
+            "model": model,
+            "train_dataset": train_ds,
+            "eval_dataset": eval_ds,
+            "dataset_text_field": "text",
+            "max_seq_length": max_seq_len,
+            "args": args,
+            "dataset_num_proc": 1,
+            "packing": False,
+        }
+
+        try:
+            trainer = SFTTrainer(processing_class=tokenizer, **trainer_kwargs)
+        except TypeError:
+            trainer = SFTTrainer(tokenizer=tokenizer, **trainer_kwargs)
 
         logger.info(
             f"Starting Training Execution (max_steps={max_steps if max_steps else 'full'}, "
