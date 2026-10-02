@@ -1,0 +1,102 @@
+project:
+  name: Universal-QLoRA-FineTuner
+  experiment_name: cybersecurity_qwen3b
+
+model:
+  name: Qwen/Qwen2.5-3B-Instruct
+
+  quantization:
+    enabled: true
+    load_in_4bit: true
+    quant_type: nf4
+    double_quantization: true
+    compute_dtype: auto
+
+dataset:
+  source: huggingface
+  name: Tiamz/cybersecurity-instruction-dataset
+  split: train
+
+  formatter: auto
+
+  validation:
+    remove_invalid: true
+    remove_duplicates: true
+    max_invalid_ratio: 0.10
+
+  cleaning:
+    enabled: true
+    trim_whitespace: true
+    normalize_whitespace: true
+    normalize_unicode: true
+    remove_empty: true
+    remove_exact_duplicates: true
+    remove_near_duplicates: false
+
+split:
+  train: 0.90
+  validation: 0.05
+  test: 0.05
+  seed: 3407
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.0
+  bias: none
+
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+training:
+  backend: auto  # 'auto', 'unsloth', or 'transformers'
+
+  epochs: 2
+  batch_size: 1
+  gradient_accumulation_steps: 8
+  learning_rate: 0.0002
+  max_seq_length: 1024
+  warmup_steps: 10
+  weight_decay: 0.01
+
+  logging_steps: 10
+  eval_steps: 100
+  save_steps: 100
+
+  gradient_checkpointing: true
+  optimizer: adamw_8bit
+  fp16: auto
+  bf16: auto
+  torch_compile: false
+  single_gpu: true
+  seed: 3407
+
+output:
+  directory: outputs/cybersecurity_qwen3b
+  save_tokenizer: true
+  save_config: true
+  save_metadata: true
+
+evaluation:
+  enabled: true
+  generation:
+    temperature: 0.7
+    top_p: 0.9
+    max_new_tokens: 256
+    repetition_penalty: 1.0
+
+inference:
+  temperature: 0.7
+  top_p: 0.9
+  max_new_tokens: 256
+  repetition_penalty: 1.0
+
+logging:
+  level: INFO
+  save_to_file: true

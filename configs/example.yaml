@@ -1,0 +1,74 @@
+project:
+  name: Universal-QLoRA-FineTuner
+  experiment_name: generic_example
+
+model:
+  name: Qwen/Qwen2.5-3B-Instruct
+
+  quantization:
+    enabled: true
+    load_in_4bit: true
+    quant_type: nf4
+    double_quantization: true
+    compute_dtype: auto
+
+dataset:
+  source: huggingface
+  name: Tiamz/cybersecurity-instruction-dataset
+  split: train
+
+  formatter: auto
+
+  validation:
+    remove_invalid: true
+    remove_duplicates: true
+    max_invalid_ratio: 0.10
+
+  cleaning:
+    enabled: true
+    trim_whitespace: true
+    normalize_whitespace: true
+    normalize_unicode: true
+    remove_empty: true
+    remove_exact_duplicates: true
+
+split:
+  train: 0.90
+  validation: 0.05
+  test: 0.05
+  seed: 3407
+
+lora:
+  r: 8
+  alpha: 16
+  dropout: 0.05
+  bias: none
+  target_modules:
+    - q_proj
+    - v_proj
+
+training:
+  backend: auto
+  epochs: 1
+  batch_size: 1
+  gradient_accumulation_steps: 4
+  learning_rate: 0.0002
+  max_seq_length: 512
+  gradient_checkpointing: true
+  optimizer: adamw_8bit
+  fp16: auto
+  bf16: auto
+  torch_compile: false
+  single_gpu: true
+
+evaluation:
+  enabled: true
+
+inference:
+  temperature: 0.7
+  top_p: 0.9
+  max_new_tokens: 128
+  repetition_penalty: 1.0
+
+output:
+  directory: outputs/generic_example

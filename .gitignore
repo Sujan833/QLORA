@@ -1,0 +1,47 @@
+# Python & Environment
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# PyTest & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+
+# Data, Model Weights & Outputs
+outputs/
+logs/
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.engine
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+
+# IDE & OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Weights & Biases / Experiment Trackers
+wandb/
+mlruns/
+
+# Credentials & Tokens
+.env
+*.pem
+secrets.yaml
