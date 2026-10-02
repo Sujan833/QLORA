@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List
 
+from datasets import Dataset
 import torch
 
 from qlora_engine.utils.logging import get_logger
