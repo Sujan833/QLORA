@@ -73,48 +73,82 @@ class TransformersPEFTBackend(BaseTrainingBackend):
         checkpoints_dir = output_dir / "checkpoints"
         checkpoints_dir.mkdir(parents=True, exist_ok=True)
 
-        args = TrainingArguments(
-            output_dir=str(checkpoints_dir),
-            per_device_train_batch_size=batch_size,
-            per_device_eval_batch_size=batch_size,
-            gradient_accumulation_steps=grad_accum,
-            learning_rate=lr,
-            num_train_epochs=epochs if max_steps is None else 1,
-            max_steps=max_steps if max_steps is not None else -1,
-            fp16=is_fp16 and torch.cuda.is_available(),
-            bf16=is_bf16 and torch.cuda.is_available(),
-            gradient_checkpointing=grad_ckpt,
-            optim=optim if torch.cuda.is_available() else "adamw_torch",
-            logging_steps=int(training_cfg.get("logging_steps", 10)),
-            eval_strategy="steps" if "validation" in dataset_splits else "no",
-            eval_steps=int(training_cfg.get("eval_steps", 100)),
-            save_strategy="steps",
-            save_steps=int(training_cfg.get("save_steps", 100)),
-            save_total_limit=2,
-            seed=seed,
-            report_to="none",
-            dataloader_num_workers=0,
-            remove_unused_columns=False,
-        )
+        try:
+            from trl import SFTConfig
+            args = SFTConfig(
+                output_dir=str(checkpoints_dir),
+                per_device_train_batch_size=batch_size,
+                per_device_eval_batch_size=batch_size,
+                gradient_accumulation_steps=grad_accum,
+                learning_rate=lr,
+                num_train_epochs=epochs if max_steps is None else 1,
+                max_steps=max_steps if max_steps is not None else -1,
+                fp16=is_fp16 and torch.cuda.is_available(),
+                bf16=is_bf16 and torch.cuda.is_available(),
+                gradient_checkpointing=grad_ckpt,
+                optim=optim if torch.cuda.is_available() else "adamw_torch",
+                logging_steps=int(training_cfg.get("logging_steps", 10)),
+                eval_strategy="steps" if "validation" in dataset_splits else "no",
+                eval_steps=int(training_cfg.get("eval_steps", 100)),
+                save_strategy="steps",
+                save_steps=int(training_cfg.get("save_steps", 100)),
+                save_total_limit=2,
+                seed=seed,
+                report_to="none",
+                dataloader_num_workers=0,
+                remove_unused_columns=False,
+                max_seq_length=max_seq_len,
+                dataset_text_field="text",
+                packing=False,
+            )
+        except (ImportError, TypeError):
+            args = TrainingArguments(
+                output_dir=str(checkpoints_dir),
+                per_device_train_batch_size=batch_size,
+                per_device_eval_batch_size=batch_size,
+                gradient_accumulation_steps=grad_accum,
+                learning_rate=lr,
+                num_train_epochs=epochs if max_steps is None else 1,
+                max_steps=max_steps if max_steps is not None else -1,
+                fp16=is_fp16 and torch.cuda.is_available(),
+                bf16=is_bf16 and torch.cuda.is_available(),
+                gradient_checkpointing=grad_ckpt,
+                optim=optim if torch.cuda.is_available() else "adamw_torch",
+                logging_steps=int(training_cfg.get("logging_steps", 10)),
+                eval_strategy="steps" if "validation" in dataset_splits else "no",
+                eval_steps=int(training_cfg.get("eval_steps", 100)),
+                save_strategy="steps",
+                save_steps=int(training_cfg.get("save_steps", 100)),
+                save_total_limit=2,
+                seed=seed,
+                report_to="none",
+                dataloader_num_workers=0,
+                remove_unused_columns=False,
+            )
 
         train_ds = dataset_splits["train"]
         eval_ds = dataset_splits.get("validation", None)
 
-        trainer_kwargs = {
+        base_trainer_kwargs = {
             "model": model,
             "train_dataset": train_ds,
             "eval_dataset": eval_ds,
-            "dataset_text_field": "text",
-            "max_seq_length": max_seq_len,
             "args": args,
-            "dataset_num_proc": 1,
-            "packing": False,
         }
 
         try:
-            trainer = SFTTrainer(processing_class=tokenizer, **trainer_kwargs)
+            trainer = SFTTrainer(processing_class=tokenizer, **base_trainer_kwargs)
         except TypeError:
-            trainer = SFTTrainer(tokenizer=tokenizer, **trainer_kwargs)
+            try:
+                trainer = SFTTrainer(tokenizer=tokenizer, **base_trainer_kwargs)
+            except TypeError:
+                trainer = SFTTrainer(
+                    tokenizer=tokenizer,
+                    dataset_text_field="text",
+                    max_seq_length=max_seq_len,
+                    packing=False,
+                    **base_trainer_kwargs,
+                )
 
         logger.info(
             f"Starting Training Execution (max_steps={max_steps if max_steps else 'full'}, "
