@@ -18,12 +18,20 @@ if str(SRC_PATH) not in sys.path:
 try:
     import torchvision
 except Exception:
-    class DummyInterpolationMode:
+    class DummyMeta(type):
+        def __getattr__(cls, name):
+            return name.lower()
+
+    class DummyInterpolationMode(metaclass=DummyMeta):
         NEAREST = "nearest"
         BILINEAR = "bilinear"
         BICUBIC = "bicubic"
+        BOX = "box"
+        HAMMING = "hamming"
+        LANCZOS = "lanczos"
+        NEAREST_EXACT = "nearest-exact"
 
-    class DummyImageReadMode:
+    class DummyImageReadMode(metaclass=DummyMeta):
         UNCHANGED = 0
 
     tv_mock = types.ModuleType("torchvision")

@@ -7,16 +7,24 @@ import types
 import importlib.machinery
 
 # Automatic guard against broken torchvision C++ binary extensions in Kaggle/Colab
-# Prevents 'RuntimeError: operator torchvision::nms does not exist' and sets proper ModuleSpec
+# Uses DummyMeta to dynamically respond to any attribute access (e.g. InterpolationMode.BOX)
 try:
     import torchvision
 except Exception:
-    class DummyInterpolationMode:
+    class DummyMeta(type):
+        def __getattr__(cls, name):
+            return name.lower()
+
+    class DummyInterpolationMode(metaclass=DummyMeta):
         NEAREST = "nearest"
         BILINEAR = "bilinear"
         BICUBIC = "bicubic"
+        BOX = "box"
+        HAMMING = "hamming"
+        LANCZOS = "lanczos"
+        NEAREST_EXACT = "nearest-exact"
 
-    class DummyImageReadMode:
+    class DummyImageReadMode(metaclass=DummyMeta):
         UNCHANGED = 0
 
     tv_mock = types.ModuleType("torchvision")
