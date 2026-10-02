@@ -4,6 +4,7 @@ End-to-End QLoRA Fine-Tuning Execution Script.
 
 import argparse
 import sys
+import types
 from pathlib import Path
 
 # Ensure src is in sys.path
@@ -11,6 +12,32 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 SRC_PATH = PROJECT_ROOT / "src"
 if str(SRC_PATH) not in sys.path:
     sys.path.insert(0, str(SRC_PATH))
+
+# Automatic guard against broken torchvision C++ binary extensions in Kaggle/Colab
+try:
+    import torchvision
+except Exception:
+    class DummyInterpolationMode:
+        NEAREST = "nearest"
+        BILINEAR = "bilinear"
+        BICUBIC = "bicubic"
+
+    class DummyImageReadMode:
+        UNCHANGED = 0
+
+    tv_mock = types.ModuleType("torchvision")
+    tv_transforms_mock = types.ModuleType("torchvision.transforms")
+    tv_transforms_mock.InterpolationMode = DummyInterpolationMode
+    tv_io_mock = types.ModuleType("torchvision.io")
+    tv_io_mock.ImageReadMode = DummyImageReadMode
+    tv_io_mock.decode_image = None
+
+    tv_mock.transforms = tv_transforms_mock
+    tv_mock.io = tv_io_mock
+
+    sys.modules["torchvision"] = tv_mock
+    sys.modules["torchvision.transforms"] = tv_transforms_mock
+    sys.modules["torchvision.io"] = tv_io_mock
 
 from qlora_engine.config.loader import load_config
 from qlora_engine.datasets.analyzer import TokenAnalyzer
