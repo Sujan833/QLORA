@@ -3,10 +3,14 @@ End-to-End QLoRA Fine-Tuning Execution Script.
 """
 
 import argparse
+import os
 import sys
 import types
 import importlib.machinery
 from pathlib import Path
+
+# Force single GPU execution environment to prevent Trainer from wrapping models in DataParallel
+os.environ.setdefault("CUDA_VISIBLE_DEVICES", "0")
 
 # Ensure src is in sys.path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent

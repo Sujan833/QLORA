@@ -2,9 +2,13 @@
 Universal QLoRA Fine-Tuner Engine Package.
 """
 
+import os
 import sys
 import types
 import importlib.machinery
+
+# Force single GPU execution environment to prevent Trainer from wrapping models in DataParallel
+os.environ.setdefault("CUDA_VISIBLE_DEVICES", "0")
 
 # Automatic guard against broken torchvision C++ binary extensions in Kaggle/Colab
 # Uses DummyMeta to dynamically respond to any attribute access (e.g. InterpolationMode.BOX)

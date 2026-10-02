@@ -128,6 +128,9 @@ def instantiate_sft_trainer(
         )
         args = TrainingArguments(**base_args_dict)
 
+    if torch.cuda.is_available():
+        args._n_gpu = 1
+
     # Inspect SFTTrainer signature
     trainer_sig = inspect.signature(SFTTrainer.__init__)
     trainer_params = trainer_sig.parameters

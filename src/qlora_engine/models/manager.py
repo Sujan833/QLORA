@@ -104,6 +104,10 @@ class ModelManager:
                 trust_remote_code=True,
             )
 
+        if hasattr(model, "config"):
+            model.config.use_cache = False
+            logger.info("Explicitly set model.config.use_cache = False for gradient checkpointing compatibility.")
+
         return model
 
     def attach_lora(self, model: Any) -> Any:
