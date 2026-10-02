@@ -5,6 +5,7 @@ End-to-End QLoRA Fine-Tuning Execution Script.
 import argparse
 import sys
 import types
+import importlib.machinery
 from pathlib import Path
 
 # Ensure src is in sys.path
@@ -26,11 +27,16 @@ except Exception:
         UNCHANGED = 0
 
     tv_mock = types.ModuleType("torchvision")
+    tv_mock.__spec__ = importlib.machinery.ModuleSpec("torchvision", loader=None)
+
     tv_transforms_mock = types.ModuleType("torchvision.transforms")
+    tv_transforms_mock.__spec__ = importlib.machinery.ModuleSpec("torchvision.transforms", loader=None)
     tv_transforms_mock.InterpolationMode = DummyInterpolationMode
+
     tv_io_mock = types.ModuleType("torchvision.io")
+    tv_io_mock.__spec__ = importlib.machinery.ModuleSpec("torchvision.io", loader=None)
     tv_io_mock.ImageReadMode = DummyImageReadMode
-    tv_io_mock.decode_image = None
+    tv_io_mock.decode_image = lambda *args, **kwargs: None
 
     tv_mock.transforms = tv_transforms_mock
     tv_mock.io = tv_io_mock
