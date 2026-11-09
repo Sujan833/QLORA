@@ -1,6 +1,8 @@
 # Universal QLoRA Fine-Tuner
 
-A production-grade, modular, and reusable LLM fine-tuning engine optimized for **QLoRA (4-bit quantization + LoRA)** on single-GPU hardware (e.g., NVIDIA Tesla T4 in Kaggle) as well as larger GPUs.
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1ZG3bTMJOeMSSx4Urrrjs3APkj08nIHFU?usp=sharing)
+
+A production-grade, modular, and reusable LLM fine-tuning engine optimized for **QLoRA (4-bit quantization + LoRA)** on single-GPU hardware (e.g., NVIDIA Tesla T4 in Kaggle/Colab) as well as larger GPUs.
 
 ---
 
@@ -88,6 +90,7 @@ Universal-QLoRA-FineTuner/
 │   ├── evaluate.py
 │   └── inference.py
 ├── notebooks/
+│   ├── colab_qlora_unsloth.ipynb
 │   └── kaggle_qlora.ipynb
 ├── tests/
 │   ├── test_config.py
